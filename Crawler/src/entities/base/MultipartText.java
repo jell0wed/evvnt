@@ -1,4 +1,4 @@
-package providers.impl.eventbrite.models;
+package entities.base;
 
 /**
  * Created by jeremiep on 2017-02-18.

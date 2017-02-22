@@ -1,11 +1,12 @@
 package providers.impl.eventbrite;
 
-import providers.impl.eventbrite.models.EventResponse;
+import providers.impl.eventbrite.models.SearchEventResponse;
+import providers.impl.eventbrite.models.VenueResponse;
 import retrofit2.Call;
 import retrofit2.http.GET;
+import retrofit2.http.Path;
 import retrofit2.http.QueryMap;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,5 +14,8 @@ import java.util.Map;
  */
 public interface IEventBriteService {
     @GET("/v3/events/search")
-    Call<EventResponse> search(@QueryMap Map<String, String> options);
+    Call<SearchEventResponse> search(@QueryMap Map<String, String> options);
+
+    @GET("/v3/venues/{venue_id}/")
+    Call<VenueResponse> venue(@Path("venue_id") String venue_id);
 }
