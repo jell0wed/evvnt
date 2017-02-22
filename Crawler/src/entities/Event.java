@@ -14,4 +14,5 @@ public class Event {
     public DateTime start;
     public DateTime end;
     public MultipartPrice price;
+    public Categories category;
 }

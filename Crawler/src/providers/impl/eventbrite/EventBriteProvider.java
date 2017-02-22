@@ -1,19 +1,19 @@
 package providers.impl.eventbrite;
 
 import entities.Event;
-import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
 import providers.AvailableProvider;
 import providers.IEventProvider;
 import providers.impl.eventbrite.models.SearchEventResponse;
+import providers.impl.eventbrite.models.simple.CategoriesResponse;
 import providers.requests.BaseParameterizedRequest;
 import providers.requests.SearchRequests;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -24,19 +24,18 @@ public class EventBriteProvider implements IEventProvider {
     private static final String API_KEY = "53QM7WSQUWPCMTHHPEZ4";
     private static final String API_ENDPOINT = "https://www.eventbriteapi.com/";
     private static final IEventBriteService eventBriteService;
+    public static HashMap<Integer, CategoriesResponse.Category> loadedCategories = null;
 
     static {
         OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
-        httpClient.addInterceptor(new Interceptor() {
-            public Response intercept(Chain chain) throws IOException {
-                Request original = chain.request();
+        httpClient.addInterceptor(chain -> {
+            Request original = chain.request();
 
-                Request.Builder requestBuilder = original.newBuilder()
-                        .header("Authorization", "Bearer " + API_KEY);
+            Request.Builder requestBuilder = original.newBuilder()
+                    .header("Authorization", "Bearer " + API_KEY);
 
-                Request request = requestBuilder.build();
-                return chain.proceed(request);
-            }
+            Request request = requestBuilder.build();
+            return chain.proceed(request);
         });
 
         Retrofit retrofit = new Retrofit.Builder()
@@ -46,7 +45,23 @@ public class EventBriteProvider implements IEventProvider {
             .build();
 
         eventBriteService = retrofit.create(IEventBriteService.class);
+        loadCategoriesIfNeeded();
     }
+
+    private static void loadCategoriesIfNeeded() {
+        if(loadedCategories != null) { return; }
+
+        try {
+            // TODO : handle paginated queries
+            CategoriesResponse categories = eventBriteService.categories().execute().body();
+            loadedCategories = new HashMap<>();
+            categories.categories.forEach(x -> loadedCategories.put(Integer.valueOf(x.id), x));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // ---
 
     public Iterator<Event> crawlEvents(BaseParameterizedRequest request) {
         return new Iterator<Event>() {
@@ -93,7 +108,7 @@ public class EventBriteProvider implements IEventProvider {
 
     public static void main(String[] args) {
         EventBriteProvider provider = new EventBriteProvider();
-        Iterator<Event> evtItt = provider.crawlEvents(new SearchRequests.ByQuery("Montréal"));
+        Iterator<Event> evtItt = provider.crawlEvents(new SearchRequests.ByQuery("Victoriaville"));
         while(evtItt.hasNext()) {
             Event evt = evtItt.next();
             System.out.println(evt.name.text);

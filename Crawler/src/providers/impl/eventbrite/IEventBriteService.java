@@ -2,6 +2,7 @@ package providers.impl.eventbrite;
 
 import providers.impl.eventbrite.models.SearchEventResponse;
 import providers.impl.eventbrite.models.VenueResponse;
+import providers.impl.eventbrite.models.simple.CategoriesResponse;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
@@ -18,4 +19,8 @@ public interface IEventBriteService {
 
     @GET("/v3/venues/{venue_id}/")
     Call<VenueResponse> venue(@Path("venue_id") String venue_id);
+
+    @GET("/v3/categories")
+    Call<CategoriesResponse> categories();
+
 }
